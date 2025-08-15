@@ -33,11 +33,6 @@ public class Main {
         exibirStatus(dev2);
 
 
-
-
-       exibirStatus(dev1);
-       exibirStatus(dev2);
-
        exibirRanking(bootcamp);
 
     }
