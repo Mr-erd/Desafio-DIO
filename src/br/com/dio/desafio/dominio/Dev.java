@@ -2,72 +2,58 @@ package br.com.dio.desafio.dominio;
 
 import java.util.*;
 
+
 public class Dev {
-
-    private  String nome;
-    private Set<Conteudo> conteudoInscritos = new LinkedHashSet<>();
-    private Set<Conteudo> conteudoConcluido = new LinkedHashSet<>();
-
-
-
-    public void  inscreverBootcamp(Bootcamp bootcamp) {
-
-        this.conteudoInscritos.addAll(bootcamp.getConteudos());
-        bootcamp.getDevsInscritos().add(this);
-    }
-
-    public void progredir() {
-       Optional<Conteudo> conteudo = this.conteudoInscritos.stream().findFirst();
-        if (conteudo.isPresent()) {
-            this.conteudoConcluido.add(conteudo.get());
-            this.conteudoInscritos.remove(conteudo.get());
-        }else {
-            System.err.println("Voce nao esta matriculado em nenhum conteudo");
-        }
-    }
-
-    public double calcularTotalXp() {
-        return this.conteudoConcluido
-                .stream()
-                .mapToDouble(Conteudo::calcularXP)
-                .sum();
+    private final String nome;
+    private final Set<Conteudo> conteudosInscritos = new LinkedHashSet<>();
+    private final Set<Conteudo> conteudosConcluidos = new LinkedHashSet<>();
+    private Bootcamp bootcamp;
 
 
+    public Dev(String nome) {
+        this.nome = Objects.requireNonNull(nome, "Nome não pode ser nulo");
     }
 
     public String getNome() {
         return nome;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public Set<Conteudo> getConteudosInscritos() {
+        return Collections.unmodifiableSet(conteudosInscritos);
     }
 
-    public Set<Conteudo> getConteudoInscricao() {
-        return conteudoInscritos;
+    public Set<Conteudo> getConteudosConcluidos() {
+        return Collections.unmodifiableSet(conteudosConcluidos);
     }
 
-    public void setConteudoInscricao(Set<Conteudo> conteudoInscricao) {
-        this.conteudoInscritos = conteudoInscricao;
+    public void inscreverBootcamp(Bootcamp bootcamp) {
+        this.bootcamp = bootcamp;
+        conteudosInscritos.addAll(bootcamp.getConteudos());
+        bootcamp.inscreverDev(this);
     }
 
-    public Set<Conteudo> getConteudoConcluido() {
-        return conteudoConcluido;
+    public void progredir() {
+        Optional<Conteudo> conteudo = conteudosInscritos.stream().findFirst();
+        conteudo.ifPresent(c -> {
+            conteudosConcluidos.add(c);
+            conteudosInscritos.remove(c);
+        });
     }
 
-    public void setConteudoConcluido(Set<Conteudo> conteudoConcluido) {
-        this.conteudoConcluido = conteudoConcluido;
+    public double calcularTotalXp() {
+        return conteudosConcluidos.stream().mapToDouble(Conteudo::calcularXp).sum();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) return true;
+        if (!(o instanceof Dev)) return false;
         Dev dev = (Dev) o;
-        return Objects.equals(nome, dev.nome) && Objects.equals(conteudoInscritos, dev.conteudoInscritos) && Objects.equals(conteudoConcluido, dev.conteudoConcluido);
+        return Objects.equals(nome, dev.nome);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nome, conteudoInscritos, conteudoConcluido);
+        return Objects.hash(nome);
     }
 }
